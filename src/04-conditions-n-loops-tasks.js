@@ -331,10 +331,15 @@ function isCreditCardNumber(ccn) {
  *   10000 ( 1+0+0+0+0 = 1 ) => 1
  *   165536 (1+6+5+5+3+6 = 26,  2+6 = 8) => 8
  */
-function getDigitalRoot(/* num */) {
-  throw new Error('Not implemented');
+function getDigitalRoot(num) {
+  const sum = num
+    .toString()
+    .split('')
+    .map((s) => parseInt(s, 10))
+    .reduce((a, b) => a + b, 0);
+  if (sum < 10) return sum;
+  return getDigitalRoot(sum);
 }
-
 
 /**
  * Returns true if the specified string has the balanced brackets and false otherwise.
@@ -357,10 +362,40 @@ function getDigitalRoot(/* num */) {
  *   '{)' = false
  *   '{[(<{[]}>)]}' = true
  */
-function isBracketsBalanced(/* str */) {
-  throw new Error('Not implemented');
-}
+function isBracketsBalanced(request) {
+  function getBracketInfo(bracket, bracketsConfig, openedBrackets) {
+    for (let i = 0; i < bracketsConfig.length; i += 1) {
+      if (bracket === bracketsConfig[i][0]) {
+        if (bracketsConfig[i][0] === bracketsConfig[i][1] && openedBrackets.indexOf(i) > -1) {
+          return { index: i, isOpen: false };
+        }
+        return { index: i, isOpen: true };
+      }
+      if (bracket === bracketsConfig[i][1]) {
+        return { index: i, isOpen: false };
+      }
+    }
+    return undefined;
+  }
 
+  function check(str, bracketsConfig) {
+    const openedBrackets = [];
+    for (let i = 0; i < str.length; i += 1) {
+      const bracket = str[i];
+      const info = getBracketInfo(bracket, bracketsConfig, openedBrackets);
+      if (info.isOpen) {
+        openedBrackets.push(info.index);
+      } else if (openedBrackets[openedBrackets.length - 1] === info.index) {
+        openedBrackets.pop();
+      } else {
+        return false;
+      }
+    }
+    return openedBrackets.length === 0;
+  }
+
+  return check(request, [['[', ']'], ['(', ')'], ['{', '}'], ['<', '>']]);
+}
 
 /**
  * Returns the string with n-ary (binary, ternary, etc, where n <= 10)
@@ -382,10 +417,9 @@ function isBracketsBalanced(/* str */) {
  *    365, 4  => '11231'
  *    365, 10 => '365'
  */
-function toNaryString(/* num, n */) {
-  throw new Error('Not implemented');
+function toNaryString(num, n) {
+  return num.toString(n);
 }
-
 
 /**
  * Returns the common directory path for specified array of full filenames.
@@ -399,10 +433,45 @@ function toNaryString(/* num, n */) {
  *   ['/web/assets/style.css', '/.bin/mocha',  '/read.me'] => '/'
  *   ['/web/favicon.ico', '/web-scripts/dump', '/verbalizer/logs'] => '/'
  */
-function getCommonDirectoryPath(/* pathes */) {
-  throw new Error('Not implemented');
+function getCommonDirectoryPath(pathes) {
+  const arrays = pathes.map((p) => p.split('/'));
+  function getMinLen() {
+    let min = 0;
+    let hasMin = false;
+    for (let i = 0; i < arrays.length; i += 1) {
+      if (!hasMin || min > arrays[i].length) {
+        min = arrays[i].length;
+        hasMin = true;
+      }
+    }
+    return min;
+  }
+  function hasTheSameElement(i) {
+    let lastElement;
+    let hasLastElement = false;
+    for (let j = 0; j < arrays.length; j += 1) {
+      const element = arrays[j][i];
+      if (!hasLastElement) {
+        lastElement = element;
+        hasLastElement = true;
+      } else if (element !== lastElement) {
+        return false;
+      }
+    }
+    return true;
+  }
+  const common = [];
+  const min = getMinLen();
+  for (let i = 0; i < min; i += 1) {
+    if (hasTheSameElement(i)) {
+      common.push(arrays[0][i]);
+    } else { break; }
+  }
+  if (common.length > 0) {
+    return `${common.join('/')}/`;
+  }
+  return '';
 }
-
 
 /**
  * Returns the product of two specified matrixes.
